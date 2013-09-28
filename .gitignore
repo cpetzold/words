@@ -1,5 +1,6 @@
 /target
 /lib
+/resources/public
 /classes
 /checkouts
 pom.xml
