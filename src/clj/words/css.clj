@@ -18,33 +18,18 @@
      :color (:text colors)
      :font {:family "Myriad Pro"
             :size (px 32)}
-     :line-height (px 48)
-     :width (percent 300)
-     ;;:overflow "hidden"
      }]
 
-   [:.article-container
-    {:display "inline-block"
-     :vertical-align "top"
-     :width (percent (/ 100 3))
-     :overflow "hidden"}]
+   [:#word
+    {:text-align "center"
+     :font-size "5em"
+     :margin-top (px 300)
+     }
+    ]
 
-   [:.article
-    {:width (px 800)
-     :margin "0 auto"}]
-
-   [:.article-image
-    {:width (percent 100)
-     :height (px 450)
-     :background-size "cover"
-     :margin-bottom (px 16)}]
-
-   [:h1
-    {:color (:headline colors)
-     :font {:size (px 45)
-            :weight "lighter"}
-     :letter-spacing (px (- 2))
-     :margin [0 0 (px 16) 0]}]
+   [:#unscrambled
+    {:color :#000}
+    ]
    ])
 
 (defn css []

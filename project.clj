@@ -5,6 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-1909"]
+                 [org.clojure/data.json "0.2.3"]
+                 [org.clojure/core.async "0.1.242.0-44b1e3-alpha"]
                  [compojure "1.1.5"]
                  [lib-noir "0.6.6"]
                  [garden "0.1.0-beta6"]
@@ -19,8 +21,7 @@
   {:builds
    [{:source-paths ["src/cljs"]
      :compiler
-     {:optimizations :advanced
-      :pretty-print false
+     {:pretty-print true
       :output-to "resources/public/words.js"
       ;;:source-map "resources/public/words.js.map"
       }}]})

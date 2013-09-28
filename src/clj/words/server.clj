@@ -20,7 +20,7 @@
 
 (defn scrambled-word []
   (wn/with-api-key wordnik-key
-    (let [word (:word (wn-words/random-word :minCorpusCount 1000))]
+    (let [word (:word (wn-words/random-word :minCorpusCount 10))]
       {:word word
        :scrambled-word (scramble word)
        :encoded-word (digest/md5 word)})))
@@ -39,6 +39,7 @@
                 (response/json (= (digest/md5 word) encoded-word))))
   (GET "/" []
        (layout
+        [:div#word]
         (element/javascript-tag "var CLOSURE_NO_DEPS = true")
         (page/include-js "words.js")
         (element/javascript-tag "words.core.init()")))
