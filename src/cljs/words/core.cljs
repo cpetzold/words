@@ -132,5 +132,7 @@
   (go
    (loop [{:keys [word scrambled-word]} (<! (request "/word/scrambled"))]
      (js/console.log word)
-     (js/console.log "correct: "(= word (apply str (<! (typing-word scrambled-word)))))
-     (recur (<! (request "/word/scrambled"))))))
+     (let [guess (apply str (<! (typing-word scrambled-word)))
+           points (:points (<! (request "/word/check" {:word guess})))]
+       (js/console.log points)
+       (recur (<! (request "/word/scrambled")))))))

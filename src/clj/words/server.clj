@@ -25,6 +25,15 @@
 (defn scramble [s]
   (->> (seq s) shuffle (apply str)))
 
+(defn word-points [word]
+  (wn/with-api-key +wordnik-key+
+    (try
+      (let [frequency (:totalCount (wn-word/frequency word :startYear 2000))]
+        (println word frequency)
+        (int (+ (count word) (* 2 (count word) (/ 1 (inc frequency))))))
+      (catch Throwable e
+        nil))))
+
 (defn valid-word? [word]
   (wn/with-api-key +wordnik-key+
     (let [parts-of-speech (->> (wn-word/definitions word)
@@ -52,8 +61,8 @@
 
 (defroutes routes
   (context "/word" []
-           (GET "/scrambled" [max-length] (response/json (scrambled-word)))
-           (GET "/check" [word] (response/json (valid-word? word))))
+           (GET "/scrambled" [] (response/json (scrambled-word)))
+           (GET "/check" [word] (response/json {:points (word-points word)})))
   (GET "/" []
        (layout
         [:div#word]
