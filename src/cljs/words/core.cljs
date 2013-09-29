@@ -246,7 +246,7 @@
     [:h3 (str "You got " points " points!")]
     [:a#tweet-score
      {:href (str "https://twitter.com/intent/tweet?text=I just scored "
-                 points " points!&url=" (js/encodeURIComponent +url+))
+                 points " points&hashtags=words&via=orwds&url=" (js/encodeURIComponent +url+))
       :target "_blank"}
      [:img.twitter {:src "/img/twitter.png"}]
      "Tweet your score"]
