@@ -80,7 +80,9 @@
      :color :#dbbb09
      :text-decoration "none"}]
 
-   [:.twitter {:margin-right (px 5)}]
+   [:.twitter {:width (px 13)
+               :height (px 11)
+               :margin-right (px 5)}]
 
    [:#overlay
     {:position "fixed"
@@ -150,9 +152,9 @@
     {:line-height (px 50)}]
 
    [:.eggheart
-    {:vertical-align (px (- 14))}]
-
-   ])
+    {:width (px 33)
+     :height (px 47)
+     :vertical-align (px (- 14))}]])
 
 (defn css []
   (garden/css
