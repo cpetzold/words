@@ -74,6 +74,14 @@
 
    [:b {:color (:text-2 colors)}]
 
+   [:#tweet-score
+    {:display "block"
+     :font-size (px 15)
+     :color :#dbbb09
+     :text-decoration "none"}]
+
+   [:.twitter {:margin-right (px 5)}]
+
    [:#overlay
     {:position "fixed"
      :top 0
@@ -86,7 +94,7 @@
      [:.modal
       {:position "fixed"
        :left (percent 50)
-       :top (px 230)
+       :top (percent 20)
        :width (px width)
        :margin-left (px (- (/ width 2)))
        :background (:highlight colors)
@@ -98,11 +106,13 @@
        {:font {:size (px 30)
                :weight 800}
         :text-align "center"
-        :margin-bottom (px 30)
+        :color :#b1970a
+        :margin-bottom (px 5)
         }]
 
       [:button
        {:cursor "pointer"
+        :margin-top (px 30)
         :padding [(px 20) (px 60)]
         :background (:bg-2 colors)
         :color :#c8ab09

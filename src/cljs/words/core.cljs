@@ -208,7 +208,7 @@
 
 (defn round []
   (let [round-el (round-template)
-        timer (timer-chan 60)
+        timer (timer-chan 1)
         done (chan)
         word-points (word-points-chan done)
         c (chan)]
@@ -237,10 +237,19 @@
           (recur (alts! [timer word-points]) total-points multiplier)))))
     c))
 
+;;(def +url+ js/window.location.href)
+(def +url+ "http://words.clojurecup.com")
+
 (deftemplate score-modal [points]
   [:#overlay
    [:#score-modal.modal
     [:h3 (str "You got " points " points!")]
+    [:a#tweet-score
+     {:href (str "https://twitter.com/intent/tweet?text=I just scored "
+                 points " points!&url=" (js/encodeURIComponent +url+))
+      :target "_blank"}
+     [:img.twitter {:src "/img/twitter.png"}]
+     "Tweet your score"]
     [:button#play-again "Play Again"]]])
 
 (defn ^:export init []
