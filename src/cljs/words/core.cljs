@@ -160,17 +160,25 @@
     c))
 
 (defn guessing-word [scrambled-word done]
-  (let [c (chan)]
+  (let [c (chan)
+        space (->> (listen js/window :keydown)
+                   (map< #(.-keyCode %))
+                   (filter< #(= % 32)))]
     (go
-     (loop [[v channel] (alts! [done (typing-word scrambled-word [] (seq scrambled-word) done)])]
+     (loop [[v channel] (alts! [(typing-word scrambled-word [] (seq scrambled-word) done)
+                                space done])]
        (cond
         (= channel done)
-        (do (js/console.log "c") (close! c))
+        (close! c)
+
+        (= channel space)
+        (do (put! c 0) (close! c))
 
         :else
         (if-let [points (:points (<! (request "/word/check" {:word (apply str v)})))]
           (do (put! c points) (close! c))
-          (recur (alts! [done (typing-word scrambled-word [] (seq scrambled-word) done)]))))))
+          (recur (alts! [(typing-word scrambled-word [] (seq scrambled-word) done)
+                         space done]))))))
     c))
 
 (defn word-points-chan [done]
@@ -179,16 +187,13 @@
      (loop [[v channel] (alts! [done (request "/word/scrambled")])]
        (cond
         (= channel done)
-        (do             (js/console.log "b")
-                        (close! c))
+        (close! c)
 
         :else
-        (do
-          (js/console.log (:word v))
-          (if-let [points (<! (guessing-word (:scrambled-word v) done))]
-            (do (put! c points)
-                (recur (alts! [done (request "/word/scrambled")])))
-            (close! c))))))
+        (if-let [points (<! (guessing-word (:scrambled-word v) done))]
+          (do (put! c points)
+              (recur (alts! [done (request "/word/scrambled")])))
+          (close! c)))))
     c))
 
 (defn round []
@@ -216,7 +221,7 @@
 
         (= channel word-points)
         (let [total-points (if v (+ total-points (* multiplier v)) total-points)
-              multiplier (if v (inc multiplier) multiplier)]
+              multiplier (if (zero? v) 1 (inc multiplier))]
           (dommy/set-text! (sel1 [:#points :.count]) total-points)
           (dommy/set-text! (sel1 [:#mult :.count]) multiplier)
           (recur (alts! [timer word-points]) total-points multiplier)))))

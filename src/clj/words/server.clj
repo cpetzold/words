@@ -70,7 +70,7 @@
         [:div#round]
         [:div#footer
          [:a.vote {:href "http://clojurecup.com/app.html?app=words"} "Vote for us on Clojure Cup!"]
-         [:span#made "Made with " " in San Francisco by "
+         [:span#made "Made by "
           [:a {:href "http://twitter.com/natenavasca"} "@natenavasca"]
           " and "
           [:a {:href "http://twitter.com/natenavasca"} "@cpetzold"]]]
