@@ -183,10 +183,12 @@
                         (close! c))
 
         :else
-        (if-let [points (<! (guessing-word (:scrambled-word v) done))]
-          (do (put! c points)
-              (recur (alts! [done (request "/word/scrambled")])))
-          (close! c)))))
+        (do
+          (js/console.log (:word v))
+          (if-let [points (<! (guessing-word (:scrambled-word v) done))]
+            (do (put! c points)
+                (recur (alts! [done (request "/word/scrambled")])))
+            (close! c))))))
     c))
 
 (defn round []

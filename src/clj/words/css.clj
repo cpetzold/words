@@ -7,6 +7,7 @@
 (def colors
   {:bg :#f2d31d
    :text :#dbbb09
+   :text-2 :#b1970a
    :bg-2 :#fee970
    :highlight :#fff
    :error :#f03a3a
@@ -18,19 +19,26 @@
     {:margin 0
      :padding 0}]
 
+   [:body :html
+    {:height (percent 100)}]
+
    [:body
-    {:background (:bg colors)
+    {:-webkit-user-select "none"
+     :background (:bg colors)
      :color (:text colors)
      :font {:family "Open Sans"
             :size (px 20)
             :weight 600}
      }]
 
+   [:#round
+    {:position "relative"
+     :top (percent 30)}]
+
    [:#word
     {:text-align "center"
      :font {:size (px 60) :weight 800}
-     :margin [(px 270) 0 (px 60)]
-     }
+     :margin-bottom (px 60)}
     [:&.success
      [:.letter {:color (:success colors)}]]
     [:&.error
@@ -60,7 +68,7 @@
 
    [:.spacer {:margin [0 (px 10)]}]
 
-   [:b {:color :#b1970a}]
+   [:b {:color (:text-2 colors)}]
 
    [:#overlay
     {:position "fixed"
@@ -90,7 +98,8 @@
         }]
 
       [:button
-       {:padding [(px 20) (px 60)]
+       {:cursor "pointer"
+        :padding [(px 20) (px 60)]
         :background (:bg-2 colors)
         :color :#c8ab09
         :border-radius (px 4)
@@ -98,9 +107,30 @@
         :font {:family "Open Sans"
                :size (px 20)
                :weight 800}
-        }
-       ]
+        :transition "0.3s all"}
+       [:&:hover
+        {:background :#FCEB89}]]
       ])
+
+   [:#footer
+    {:position "fixed"
+     :bottom (px 20)
+     :width (percent 100)
+     :font-weight 600
+     :text-align "center"
+     }
+    ]
+
+   [:a
+    {:color (:text-2 colors)
+     :transition "0.3s all"}
+    [:&:hover
+     {:color :#9b8409}]]
+
+   [:.vote
+    {:display "block"
+     :margin-bottom (px 10)
+     :text-decoration "none"}]
 
    ])
 
