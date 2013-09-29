@@ -56,6 +56,7 @@
   (page/html5
    [:head
     [:title "words"]
+    (page/include-css "http://fonts.googleapis.com/css?family=Open+Sans:800,700,400")
     (page/include-css "style.css")]
    [:body content]))
 

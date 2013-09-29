@@ -77,9 +77,12 @@
       (recur (rest unscrambled) (remove-first #(= % letter) scrambled))
       scrambled)))
 
+(deftemplate letter-box [c]
+  [:span.letter c])
+
 (deftemplate word-text [unscrambled scrambled]
-  [:span#unscrambled (apply str unscrambled)]
-  [:span#scrambled (apply str scrambled)])
+  [:span#unscrambled (map letter-box unscrambled)]
+  [:span#scrambled (map letter-box scrambled)])
 
 (defn typing-word [scrambled-word]
   (let [c (chan)]
