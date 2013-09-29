@@ -28,8 +28,9 @@
 (defn word-points [word]
   (wn/with-api-key +wordnik-key+
     (try
-      (let [frequency (:totalCount (wn-word/frequency word :startYear 2000))]
-        (int (+ (count word) (* 2 (count word) (/ 1 (inc frequency))))))
+      (when (seq (wn-word/definitions word))
+        (let [frequency (:totalCount (wn-word/frequency word :startYear 2000))]
+          (int (+ (count word) (* 2 (count word) (/ 1 (inc frequency)))))))
       (catch Throwable e
         nil))))
 
