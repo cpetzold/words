@@ -73,7 +73,8 @@
                    :target "_blank"}
           "Vote for us on Clojure Cup!"]
          [:span#made "Made with "
-          [:img.eggheart {:src "/img/eggheart.png"}]
+          [:img.eggheart {:src "/img/eggheart.png"
+                          :title "No eggs were harmed in the making of this application."}]
           " by "
           [:a {:href "http://twitter.com/natenavasca" :target "_blank"} "@natenavasca"]
           " and "

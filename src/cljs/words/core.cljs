@@ -119,7 +119,7 @@
 
        (js/console.log scrambled-word (str unscrambled) (str scrambled))
        (doto (sel1 :#word)
-         (dommy/remove-class! :success)
+         (dommy/remove-class! :success :error)
          (dommy/replace-contents! (word-text unscrambled scrambled)))
 
        (loop [unscrambled unscrambled
@@ -136,9 +136,7 @@
           (= channel backspace)
           (let [unscrambled (butlast unscrambled)
                 scrambled (replay-unscramble unscrambled scrambled-word)]
-            (doto (sel1 :#word)
-              (dommy/remove-class! :error)
-              (dommy/replace-contents! (word-text unscrambled scrambled)))
+            (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
             (recur unscrambled scrambled (alts! [keypress backspace done])))
 
           (= channel keypress)
@@ -189,7 +187,7 @@
           (do
             (dommy/add-class! (sel1 :#word) :error)
             (<! (timeout 500))
-            (recur (alts! [(typing-word scrambled-word v [] done)
+            (recur (alts! [(typing-word scrambled-word [] (seq scrambled-word) done)
                            space done])))))))
     c))
 
