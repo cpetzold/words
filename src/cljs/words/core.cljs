@@ -77,6 +77,16 @@
   [:span#unscrambled (map letter-box unscrambled)]
   [:span#scrambled (map letter-box scrambled)])
 
+(deftemplate round-template []
+  [:#round
+   [:#word]
+   [:#hud
+    [:span#time [:b [:span.count "60"] "s"] " left"]
+    [:span.spacer "|"]
+    [:span#points [:b [:span.count "0"]] " points"]
+    [:span.spacer "|"]
+    [:span#mult [:b [:span.count "1"] "x"] " multiplier"]]])
+
 (defn replay-unscramble [unscrambled scrambled-word]
   (loop [unscrambled unscrambled
          scrambled (seq scrambled-word)]
@@ -84,7 +94,19 @@
       (recur (rest unscrambled) (remove-first #(= % letter) scrambled))
       scrambled)))
 
-(defn typing-word [scrambled-word unscrambled scrambled]
+(defn timer-chan [seconds]
+  (let [c (chan)]
+    (go
+     (loop [seconds seconds]
+       (<! (timeout 1000))
+       (let [seconds (dec seconds)]
+         (put! c seconds)
+         (if (neg? seconds)
+           (close! c)
+           (recur seconds)))))
+    c))
+
+(defn typing-word [scrambled-word unscrambled scrambled done]
   (let [c (chan)]
     (go
      (let [unscrambled unscrambled
@@ -99,17 +121,22 @@
 
        (loop [unscrambled unscrambled
               scrambled scrambled
-              [key-pressed key-chan] (alts! [keypress backspace])]
+              [key-pressed channel] (alts! [keypress backspace done])]
 
          (cond
 
-          (= key-chan backspace)
+          (= channel done)
+          (do (close! keypress)
+              (close! backspace)
+              (close! c))
+
+          (= channel backspace)
           (let [unscrambled (butlast unscrambled)
                 scrambled (replay-unscramble unscrambled scrambled-word)]
             (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
-            (recur unscrambled scrambled (alts! [keypress backspace])))
+            (recur unscrambled scrambled (alts! [keypress backspace done])))
 
-          (= key-chan keypress)
+          (= channel keypress)
           (let [letter-pressed (js/String.fromCharCode key-pressed)]
             (cond
              ((set scrambled) letter-pressed)
@@ -117,64 +144,56 @@
                    scrambled (remove-first #(= % letter-pressed) scrambled)]
                (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
                (if (seq scrambled)
-                 (recur unscrambled scrambled (alts! [keypress backspace]))
+                 (recur unscrambled scrambled (alts! [keypress backspace done]))
                  (do
                    (put! c unscrambled)
+                   (close! keypress)
+                   (close! backspace)
                    (close! c))))
 
-             :else (recur unscrambled scrambled (alts! [keypress backspace]))
+             :else (recur unscrambled scrambled (alts! [keypress backspace done]))
              ))
 
-          :else (recur unscrambled scrambled (alts! [keypress backspace])))
+          :else (recur unscrambled scrambled (alts! [keypress backspace done])))
 
          )))
     c))
 
-(defn guessing-word [scrambled-word]
+(defn guessing-word [scrambled-word done]
   (let [c (chan)]
     (go
-     (loop [unscrambled (<! (typing-word scrambled-word [] (seq scrambled-word)))]
-       (if-let [points (:points (<! (request "/word/check" {:word (apply str unscrambled)})))]
-         (do (put! c points) (close! c))
-         (recur (<! (typing-word scrambled-word unscrambled []))))))
+     (loop [[v channel] (alts! [done (typing-word scrambled-word [] (seq scrambled-word) done)])]
+       (cond
+        (= channel done)
+        (do (js/console.log "c") (close! c))
+
+        :else
+        (if-let [points (:points (<! (request "/word/check" {:word (apply str v)})))]
+          (do (put! c points) (close! c))
+          (recur (alts! [done (typing-word scrambled-word [] (seq scrambled-word) done)]))))))
     c))
 
-(defn timer-chan [seconds]
+(defn word-points-chan [done]
   (let [c (chan)]
     (go
-     (loop [seconds seconds]
-       (<! (timeout 1000))
-       (let [seconds (dec seconds)]
-         (put! c seconds)
-         (if (zero? seconds)
-           (close! c)
-           (recur seconds)))))
-    c))
+     (loop [[v channel] (alts! [done (request "/word/scrambled")])]
+       (cond
+        (= channel done)
+        (do             (js/console.log "b")
+                        (close! c))
 
-(defn word-points-chan []
-  (let [c (chan)]
-    (go
-     (loop [{:keys [word scrambled-word]} (<! (request "/word/scrambled"))]
-       (js/console.log word)
-       (let [points (<! (guessing-word scrambled-word))]
-         (put! c points)
-         (recur (<! (request "/word/scrambled"))))))
+        :else
+        (if-let [points (<! (guessing-word (:scrambled-word v) done))]
+          (do (put! c points)
+              (recur (alts! [done (request "/word/scrambled")])))
+          (close! c)))))
     c))
-
-(deftemplate round-template []
-  [:#round
-   [:#word]
-   [:#hud
-    [:span#time [:b [:span.count "60"] "s"] " left"]
-    [:span.spacer "|"]
-    [:span#points [:b [:span.count "0"]] " points"]
-    [:span.spacer "|"]
-    [:span#mult [:b [:span.count "1"] "x"] " multiplier"]]])
 
 (defn round []
   (let [round-el (round-template)
         timer (timer-chan 60)
-        word-points (word-points-chan)
+        done (chan)
+        word-points (word-points-chan done)
         c (chan)]
     (dommy/replace! (sel1 :#round) round-el)
     (go
@@ -183,12 +202,12 @@
             multiplier 1]
        (cond
         (= channel timer)
-        (if (= v 0)
+        (if (neg? v)
           (do
-            (close! word-points)
             (put! c total-points)
-            (close! c)
-            )
+            (put! done true)
+            (close! done)
+            (close! c))
           (do
             (dommy/set-text! (sel1 [:#time :.count]) v)
             (recur (alts! [timer word-points]) total-points multiplier)))

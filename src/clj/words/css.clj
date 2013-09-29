@@ -55,9 +55,7 @@
      ]]
 
    [:#hud
-    {:text-align "center"
-     }
-    ]
+    {:text-align "center"}]
 
    [:.spacer {:margin [0 (px 10)]}]
 
