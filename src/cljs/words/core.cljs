@@ -117,7 +117,10 @@
                           (map< #(.-keyCode %))
                           (filter< #(= % 8)))]
 
-       (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
+       (js/console.log scrambled-word (str unscrambled) (str scrambled))
+       (doto (sel1 :#word)
+         (dommy/remove-class! :success)
+         (dommy/replace-contents! (word-text unscrambled scrambled)))
 
        (loop [unscrambled unscrambled
               scrambled scrambled
@@ -133,7 +136,9 @@
           (= channel backspace)
           (let [unscrambled (butlast unscrambled)
                 scrambled (replay-unscramble unscrambled scrambled-word)]
-            (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
+            (doto (sel1 :#word)
+              (dommy/remove-class! :error)
+              (dommy/replace-contents! (word-text unscrambled scrambled)))
             (recur unscrambled scrambled (alts! [keypress backspace done])))
 
           (= channel keypress)
@@ -176,9 +181,16 @@
 
         :else
         (if-let [points (:points (<! (request "/word/check" {:word (apply str v)})))]
-          (do (put! c points) (close! c))
-          (recur (alts! [(typing-word scrambled-word [] (seq scrambled-word) done)
-                         space done]))))))
+          (do
+            (dommy/add-class! (sel1 :#word) :success)
+            (<! (timeout 500))
+            (put! c points)
+            (close! c))
+          (do
+            (dommy/add-class! (sel1 :#word) :error)
+            (<! (timeout 500))
+            (recur (alts! [(typing-word scrambled-word v [] done)
+                           space done])))))))
     c))
 
 (defn word-points-chan [done]
