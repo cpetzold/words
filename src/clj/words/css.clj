@@ -8,6 +8,8 @@
    :text :#dbbb09
    :bg-2 :#fee970
    :highlight :#fff
+   :error :#f03a3a
+   :success :#06c96f
    })
 
 (def rules
@@ -26,7 +28,11 @@
     {:text-align "center"
      :font {:size (px 60) :weight 800}
      :margin-top (px 270)
-     }]
+     }
+    [:&.success
+     [:.letter {:color (:success colors)}]]
+    [:&.error
+     [:.letter {:color (:error colors)}]]]
 
    (let [size (px 80)]
      [:.letter
@@ -46,6 +52,7 @@
      {:background (:highlight colors)
       :color (:bg colors)}
      ]]
+
    ])
 
 (defn css []
