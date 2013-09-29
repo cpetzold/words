@@ -117,7 +117,6 @@
                           (map< #(.-keyCode %))
                           (filter< #(= % 8)))]
 
-       (js/console.log scrambled-word (str unscrambled) (str scrambled))
        (doto (sel1 :#word)
          (dommy/remove-class! :success :error)
          (dommy/replace-contents! (word-text unscrambled scrambled)))
@@ -141,21 +140,18 @@
 
           (= channel keypress)
           (let [letter-pressed (js/String.fromCharCode key-pressed)]
-            (cond
-             ((set scrambled) letter-pressed)
-             (let [unscrambled (concat unscrambled (seq letter-pressed))
-                   scrambled (remove-first #(= % letter-pressed) scrambled)]
-               (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
-               (if (seq scrambled)
-                 (recur unscrambled scrambled (alts! [keypress backspace done]))
-                 (do
-                   (put! c unscrambled)
-                   (close! keypress)
-                   (close! backspace)
-                   (close! c))))
-
-             :else (recur unscrambled scrambled (alts! [keypress backspace done]))
-             ))
+            (if-not ((set scrambled) letter-pressed)
+              (recur unscrambled scrambled (alts! [keypress backspace done]))
+              (let [unscrambled (concat unscrambled (seq letter-pressed))
+                    scrambled (remove-first #(= % letter-pressed) scrambled)]
+                (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
+                (if (seq scrambled)
+                  (recur unscrambled scrambled (alts! [keypress backspace done]))
+                  (do
+                    (put! c unscrambled)
+                    (close! keypress)
+                    (close! backspace)
+                    (close! c))))))
 
           :else (recur unscrambled scrambled (alts! [keypress backspace done])))
 
