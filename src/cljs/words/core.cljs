@@ -208,7 +208,7 @@
 
 (defn round []
   (let [round-el (round-template)
-        timer (timer-chan 1)
+        timer (timer-chan 60)
         done (chan)
         word-points (word-points-chan done)
         c (chan)]
