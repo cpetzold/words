@@ -77,8 +77,6 @@
   [:span#unscrambled (map letter-box unscrambled)]
   [:span#scrambled (map letter-box scrambled)])
 
-(def +word-el+ (sel1 :#word))
-
 (defn replay-unscramble [unscrambled scrambled-word]
   (loop [unscrambled unscrambled
          scrambled (seq scrambled-word)]
@@ -97,7 +95,7 @@
                           (map< #(.-keyCode %))
                           (filter< #(= % 8)))]
 
-       (dommy/replace-contents! +word-el+ (word-text unscrambled scrambled))
+       (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
 
        (loop [unscrambled unscrambled
               scrambled scrambled
@@ -108,7 +106,7 @@
           (= key-chan backspace)
           (let [unscrambled (butlast unscrambled)
                 scrambled (replay-unscramble unscrambled scrambled-word)]
-            (dommy/replace-contents! +word-el+ (word-text unscrambled scrambled))
+            (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
             (recur unscrambled scrambled (alts! [keypress backspace])))
 
           (= key-chan keypress)
@@ -117,7 +115,7 @@
              ((set scrambled) letter-pressed)
              (let [unscrambled (concat unscrambled (seq letter-pressed))
                    scrambled (remove-first #(= % letter-pressed) scrambled)]
-               (dommy/replace-contents! +word-el+ (word-text unscrambled scrambled))
+               (dommy/replace-contents! (sel1 :#word) (word-text unscrambled scrambled))
                (if (seq scrambled)
                  (recur unscrambled scrambled (alts! [keypress backspace]))
                  (do
@@ -163,24 +161,49 @@
          (recur (<! (request "/word/scrambled"))))))
     c))
 
+(deftemplate round-template []
+  [:#round
+   [:#word]
+   [:#hud
+    [:span#time [:b [:span.count "60"] "s"] " left"]
+    [:span.spacer "|"]
+    [:span#points [:b [:span.count "0"]] " points"]
+    [:span.spacer "|"]
+    [:span#mult [:b [:span.count "1"] "x"] " multiplier"]]])
+
 (defn round []
-  (let [timer (timer-chan 60)
-        word-points (word-points-chan)]
+  (let [round-el (round-template)
+        timer (timer-chan 60)
+        word-points (word-points-chan)
+        c (chan)]
+    (dommy/replace! (sel1 :#round) round-el)
     (go
      (loop [[v channel] (alts! [timer word-points])
             total-points 0
             multiplier 1]
        (cond
         (= channel timer)
-        (do
-          (set! (.-title js/document) v)
-          (recur (alts! [timer word-points]) total-points multiplier))
+        (if (= v 0)
+          (do
+            (close! word-points)
+            (put! c total-points)
+            (close! c)
+            )
+          (do
+            (dommy/set-text! (sel1 [:#time :.count]) v)
+            (recur (alts! [timer word-points]) total-points multiplier)))
 
         (= channel word-points)
         (let [total-points (if v (+ total-points (* multiplier v)) total-points)
               multiplier (if v (inc multiplier) multiplier)]
-          (js/console.log "total points:" total-points "multiplier:" multiplier)
-          (recur (alts! [timer word-points]) total-points multiplier)))))))
+          (dommy/set-text! (sel1 [:#points :.count]) total-points)
+          (dommy/set-text! (sel1 [:#mult :.count]) multiplier)
+          (recur (alts! [timer word-points]) total-points multiplier)))))
+    c))
 
 (defn ^:export init []
-  (round))
+  (go
+   (loop [round-points (<! (round))]
+     (js/console.log "congrats, you got" round-points "points!")
+     (<! (timeout 3000))
+     (recur (<! (round))))))

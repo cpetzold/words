@@ -21,13 +21,14 @@
     {:background (:bg colors)
      :color (:text colors)
      :font {:family "Open Sans"
-            :size (px 32)}
+            :size (px 20)
+            :weight 600}
      }]
 
    [:#word
     {:text-align "center"
      :font {:size (px 60) :weight 800}
-     :margin-top (px 270)
+     :margin [(px 270) 0 (px 60)]
      }
     [:&.success
      [:.letter {:color (:success colors)}]]
@@ -52,6 +53,15 @@
      {:background (:highlight colors)
       :color (:bg colors)}
      ]]
+
+   [:#hud
+    {:text-align "center"
+     }
+    ]
+
+   [:.spacer {:margin [0 (px 10)]}]
+
+   [:b {:color :#b1970a}]
 
    ])
 

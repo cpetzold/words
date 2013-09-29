@@ -66,7 +66,7 @@
            (GET "/check" [word] (response/json {:points (word-points word)})))
   (GET "/" []
        (layout
-        [:div#word]
+        [:div#round]
         (element/javascript-tag "var CLOSURE_NO_DEPS = true")
         (page/include-js "words.js")
         (element/javascript-tag "words.core.init()")))
