@@ -220,9 +220,17 @@
           (recur (alts! [timer word-points]) total-points multiplier)))))
     c))
 
+(deftemplate score-modal [points]
+  [:#overlay
+   [:#score-modal.modal
+    [:h3 (str "You got " points " points!")]
+    [:button#play-again "Play Again"]]])
+
 (defn ^:export init []
   (go
    (loop [round-points (<! (round))]
-     (js/console.log "congrats, you got" round-points "points!")
-     (<! (timeout 3000))
-     (recur (<! (round))))))
+     (let [score-el (score-modal round-points)]
+       (dommy/append! js/document.body score-el)
+       (<! (listen (sel1 :#play-again) :click (constantly true)))
+       (dommy/remove! score-el)
+       (recur (<! (round)))))))

@@ -1,7 +1,8 @@
 (ns words.css
   (:require
    [garden.core :as garden]
-   [garden.units :as u :refer [px percent]]))
+   [garden.units :as u :refer [px percent]]
+   [garden.color :as color]))
 
 (def colors
   {:bg :#f2d31d
@@ -60,6 +61,46 @@
    [:.spacer {:margin [0 (px 10)]}]
 
    [:b {:color :#b1970a}]
+
+   [:#overlay
+    {:position "fixed"
+     :top 0
+     :left 0
+     :width (percent 100)
+     :height (percent 100)
+     :background "rgba(200, 171, 9, 0.6)"}]
+
+   (let [width 460]
+     [:.modal
+      {:position "fixed"
+       :left (percent 50)
+       :top (px 230)
+       :width (px width)
+       :margin-left (px (- (/ width 2)))
+       :background (:highlight colors)
+       :border-radius (px 4)
+       :padding [(px 60) 0]
+       :text-align "center"}
+
+      [:h3
+       {:font {:size (px 30)
+               :weight 800}
+        :text-align "center"
+        :margin-bottom (px 30)
+        }]
+
+      [:button
+       {:padding [(px 20) (px 60)]
+        :background (:bg-2 colors)
+        :color :#c8ab09
+        :border-radius (px 4)
+        :border "none"
+        :font {:family "Open Sans"
+               :size (px 20)
+               :weight 800}
+        }
+       ]
+      ])
 
    ])
 
