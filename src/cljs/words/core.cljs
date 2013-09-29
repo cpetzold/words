@@ -175,7 +175,9 @@
         (close! c)
 
         (= channel space)
-        (do (put! c 0) (close! c))
+        (do (put! done true)
+            (put! c 0)
+            (close! c))
 
         :else
         (if-let [points (:points (<! (request "/word/check" {:word (apply str v)})))]
