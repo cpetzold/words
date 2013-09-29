@@ -69,13 +69,15 @@
        (layout
         [:div#round]
         [:div#footer
-         [:a.vote {:href "http://clojurecup.com/app.html?app=words"} "Vote for us on Clojure Cup!"]
+         [:a.vote {:href "http://clojurecup.com/app.html?app=words"
+                   :target "_blank"}
+          "Vote for us on Clojure Cup!"]
          [:span#made "Made with "
           [:img.eggheart {:src "/img/eggheart.png"}]
           " by "
-          [:a {:href "http://twitter.com/natenavasca"} "@natenavasca"]
+          [:a {:href "http://twitter.com/natenavasca" :target "_blank"} "@natenavasca"]
           " and "
-          [:a {:href "http://twitter.com/natenavasca"} "@cpetzold"]]]
+          [:a {:href "http://twitter.com/cpetzold" :target "_blank"} "@cpetzold"]]]
         (element/javascript-tag "var CLOSURE_NO_DEPS = true")
         (page/include-js "words.js")
         (element/javascript-tag "words.core.init()")))
