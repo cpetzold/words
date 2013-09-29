@@ -14,6 +14,8 @@
    :success :#06c96f
    })
 
+(def +letter-size+ (px 80))
+
 (def rules
   [[:body :h1 :h2 :h3 :h4 :h5 :p
     {:margin 0
@@ -38,24 +40,26 @@
    [:#word
     {:text-align "center"
      :font {:size (px 60) :weight 800}
-     :margin-bottom (px 60)}
+     :margin-bottom (px 60)
+     :height +letter-size+}
     [:&.success
-     [:.letter {:color (:success colors)}]]
+     [:.letter {:color (:highlight colors)
+                :background (:success colors)}]]
     [:&.error
-     [:.letter {:color (:error colors)}]]]
+     [:.letter {:color (:highlight colors)
+                :background (:error colors)}]]]
 
-   (let [size (px 80)]
-     [:.letter
-      {:display "inline-block"
-       :width size
-       :height size
-       :line-height size
-       :background (:bg-2 colors)
-       :color (:text colors)
-       :border-radius (px 4)
-       :margin [0 (px 5)]
-       :text-transform "uppercase"
-       }])
+   [:.letter
+    {:display "inline-block"
+     :width +letter-size+
+     :height +letter-size+
+     :line-height +letter-size+
+     :background (:bg-2 colors)
+     :color (:text colors)
+     :border-radius (px 4)
+     :margin [0 (px 5)]
+     :text-transform "uppercase"
+     }]
 
    [:#unscrambled
     [:.letter
@@ -131,6 +135,12 @@
     {:display "block"
      :margin-bottom (px 10)
      :text-decoration "none"}]
+
+   [:#made
+    {:line-height (px 50)}]
+
+   [:.eggheart
+    {:vertical-align (px (- 14))}]
 
    ])
 

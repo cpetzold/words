@@ -70,7 +70,9 @@
         [:div#round]
         [:div#footer
          [:a.vote {:href "http://clojurecup.com/app.html?app=words"} "Vote for us on Clojure Cup!"]
-         [:span#made "Made by "
+         [:span#made "Made with "
+          [:img.eggheart {:src "/img/eggheart.png"}]
+          " by "
           [:a {:href "http://twitter.com/natenavasca"} "@natenavasca"]
           " and "
           [:a {:href "http://twitter.com/natenavasca"} "@cpetzold"]]]
