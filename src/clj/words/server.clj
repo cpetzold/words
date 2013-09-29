@@ -29,7 +29,6 @@
   (wn/with-api-key +wordnik-key+
     (try
       (let [frequency (:totalCount (wn-word/frequency word :startYear 2000))]
-        (println word frequency)
         (int (+ (count word) (* 2 (count word) (/ 1 (inc frequency))))))
       (catch Throwable e
         nil))))
@@ -43,10 +42,11 @@
 
 (defn scrambled-word []
   (wn/with-api-key +wordnik-key+
-    (let [word (:word (wn-words/random-word
-                       :maxLength 6
-                       :minCorpusCount 5000
-                       :excludePartOfSpeech (str/join "," +excluded-pos+)))]
+    (let [word (str/lower-case
+                (:word (wn-words/random-word
+                        :maxLength 6
+                        :minCorpusCount 5000
+                        :excludePartOfSpeech (str/join "," +excluded-pos+))))]
       (if-not (valid-word? word)
         (scrambled-word)
         {:word word
