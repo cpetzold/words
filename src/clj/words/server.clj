@@ -11,7 +11,6 @@
    [wordnik.core :as wn]
    [wordnik.api.word :as wn-word]
    [wordnik.api.words :as wn-words]
-   [digest :as digest]
    [words.css :as css]))
 
 (def +wordnik-key+ "997ea3a64b190c6d8f0040df7b6003393e51bbd224bc5ec8d")
@@ -26,21 +25,23 @@
 (defn scramble [s]
   (->> (seq s) shuffle (apply str)))
 
+(defn valid-word? [word]
+  (wn/with-api-key +wordnik-key+
+    (let [parts-of-speech (->> (wn-word/definitions word)
+                               (map :partOfSpeech)
+                               (filter identity))]
+      (boolean (seq parts-of-speech)))))
+
 (defn scrambled-word []
   (wn/with-api-key +wordnik-key+
     (let [word (:word (wn-words/random-word
                        :maxLength 6
                        :minCorpusCount 5000
-                       :excludePartOfSpeech (str/join "," +excluded-pos+)))
-          parts-of-speech (->> (wn-word/definitions word)
-                               (map :partOfSpeech)
-                               (filter identity))]
-      (println word (count parts-of-speech))
-      (if-not (seq parts-of-speech)
+                       :excludePartOfSpeech (str/join "," +excluded-pos+)))]
+      (if-not (valid-word? word)
         (scrambled-word)
         {:word word
-         :scrambled-word (scramble word)
-         :encoded-word (digest/md5 word)}))))
+         :scrambled-word (scramble word)}))))
 
 (defn layout [& content]
   (page/html5
@@ -51,10 +52,8 @@
 
 (defroutes routes
   (context "/word" []
-           (GET "/scrambled" [max-length]
-                (response/json (scrambled-word)))
-           (GET "/check" [word encoded-word]
-                (response/json (= (digest/md5 word) encoded-word))))
+           (GET "/scrambled" [max-length] (response/json (scrambled-word)))
+           (GET "/check" [word] (response/json (valid-word? word))))
   (GET "/" []
        (layout
         [:div#word]

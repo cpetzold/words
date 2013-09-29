@@ -81,46 +81,56 @@
   [:span#unscrambled (apply str unscrambled)]
   [:span#scrambled (apply str scrambled)])
 
+(defn typing-word [scrambled-word]
+  (let [c (chan)]
+    (go
+     (let [unscrambled []
+           scrambled (seq scrambled-word)
+           word-el (sel1 :#word)
+           keypress (->> (listen js/window :keypress)
+                         (map< #(.-keyCode %)))
+           backspace (->> (listen js/window :keydown #(= (.-keyCode %) 8))
+                          (map< #(.-keyCode %))
+                          (filter< #(= % 8)))]
+
+       (dommy/replace-contents! word-el (word-text unscrambled scrambled))
+
+       (loop [unscrambled unscrambled
+              scrambled scrambled
+              [key-pressed key-chan] (alts! [keypress backspace])]
+
+         (cond
+
+          (= key-chan backspace)
+          (let [unscrambled (butlast unscrambled)
+                scrambled (replay-unscramble unscrambled scrambled-word)]
+            (dommy/replace-contents! word-el (word-text unscrambled scrambled))
+            (recur unscrambled scrambled (alts! [keypress backspace])))
+
+          (= key-chan keypress)
+          (let [letter-pressed (js/String.fromCharCode key-pressed)]
+            (cond
+             ((set scrambled) letter-pressed)
+             (let [unscrambled (concat unscrambled (seq letter-pressed))
+                   scrambled (remove-first #(= % letter-pressed) scrambled)]
+               (dommy/replace-contents! word-el (word-text unscrambled scrambled))
+               (if (seq scrambled)
+                 (recur unscrambled scrambled (alts! [keypress backspace]))
+                 (do
+                   (put! c unscrambled)
+                   (close! c))))
+
+             :else (recur unscrambled scrambled (alts! [keypress backspace]))
+             ))
+
+          :else (recur unscrambled scrambled (alts! [keypress backspace])))
+
+         )))
+    c))
+
 (defn ^:export init []
   (go
-   (let [{:keys [word scrambled-word]} (<! (request "/word/scrambled" {:max-length 4}))
-         unscrambled []
-         scrambled (seq scrambled-word)
-         word-el (sel1 :#word)
-         keypress (->> (listen js/window :keypress)
-                       (map< #(.-keyCode %)))
-         backspace (->> (listen js/window :keydown #(= (.-keyCode %) 8))
-                        (map< #(.-keyCode %))
-                        (filter< #(= % 8)))]
-
+   (loop [{:keys [word scrambled-word]} (<! (request "/word/scrambled"))]
      (js/console.log word)
-
-     (dommy/replace-contents! word-el (word-text unscrambled scrambled))
-
-     (loop [unscrambled unscrambled
-            scrambled scrambled
-            [key-pressed key-chan] (alts! [keypress backspace])]
-
-       (cond
-
-        (= key-chan backspace)
-        (let [unscrambled (butlast unscrambled)
-              scrambled (replay-unscramble unscrambled scrambled-word)]
-          (dommy/replace-contents! word-el (word-text unscrambled scrambled))
-          (recur unscrambled scrambled (alts! [keypress backspace])))
-
-        (= key-chan keypress)
-        (let [letter-pressed (js/String.fromCharCode key-pressed)]
-          (cond
-           ((set scrambled) letter-pressed)
-           (let [unscrambled (concat unscrambled (seq letter-pressed))
-                 scrambled (remove-first #(= % letter-pressed) scrambled)]
-             (dommy/replace-contents! word-el (word-text unscrambled scrambled))
-             (recur unscrambled scrambled (alts! [keypress backspace])))
-
-           :else (recur unscrambled scrambled (alts! [keypress backspace]))
-           ))
-
-        :else (recur unscrambled scrambled (alts! [keypress backspace])))
-
-       ))))
+     (js/console.log "correct: "(= word (apply str (<! (typing-word scrambled-word)))))
+     (recur (<! (request "/word/scrambled"))))))
