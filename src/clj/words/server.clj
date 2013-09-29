@@ -20,7 +20,7 @@
 
 (defn scrambled-word []
   (wn/with-api-key wordnik-key
-    (let [word (:word (wn-words/random-word :minCorpusCount 10))]
+    (let [word (:word (wn-words/random-word :maxLength 6 :minCorpusCount 5000))]
       {:word word
        :scrambled-word (scramble word)
        :encoded-word (digest/md5 word)})))
@@ -34,7 +34,8 @@
 
 (defroutes routes
   (context "/word" []
-           (GET "/scrambled" [] (response/json (scrambled-word)))
+           (GET "/scrambled" [max-length]
+                (response/json (scrambled-word)))
            (GET "/check" [word encoded-word]
                 (response/json (= (digest/md5 word) encoded-word))))
   (GET "/" []

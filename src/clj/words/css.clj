@@ -4,9 +4,8 @@
    [garden.units :as u :refer [px percent]]))
 
 (def colors
-  {:bg :#fff
-   :headline :#222
-   :text :#a4a9a9})
+  {:bg :#222
+   :text :#555})
 
 (def rules
   [[:body :h1 :h2 :h3 :h4 :h5 :p
@@ -23,12 +22,12 @@
    [:#word
     {:text-align "center"
      :font-size "5em"
-     :margin-top (px 300)
+     :margin-top (px 100)
      }
     ]
 
    [:#unscrambled
-    {:color :#000}
+    {:color :#fff}
     ]
    ])
 
